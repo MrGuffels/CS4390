@@ -1,4 +1,5 @@
 public class helper{
+	
 	public static String buildHeader(boolean ACK, boolean NACK, boolean EOF, boolean RDY, boolean ASK, boolean FIN) {
 		String header;
 		header = boolToStr(ACK);

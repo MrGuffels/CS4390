@@ -12,8 +12,6 @@ public class client{
 		boolean ASK = false;
 		boolean FIN = false;
 		
-		ACK = true;
-		RDY = true;
 		System.out.print(helper.buildHeader(ACK,NACK,EOF,RDY,ASK,FIN));
 	}
 }
