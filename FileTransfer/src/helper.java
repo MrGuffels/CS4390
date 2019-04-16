@@ -18,3 +18,5 @@ public class helper{
 		return str;
 	}
 }
+
+//System.out.print(helper.buildHeader(ACK,NACK,EOF,RDY,ASK,FIN));
