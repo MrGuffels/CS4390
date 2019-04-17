@@ -21,16 +21,19 @@ public class client{
 		//User Enters File to Download
 		String fileName = getString();
 		
-		
-		//File Output While Receiving
+		//File Output to File Path
 		FileOutputStream fos = new FileOutputStream("c:\\"+fileName);
-				
+		BufferedOutputStream bos = new BufferedOutputStream(fos);
+		InputStream is = socket.getInputStream();
 		
+		//Receive File
+		int bytesRead = 0;
 		
+		while((bytesRead=is.read(contents))!=-1)
+			bos.write(contents,0,bytesRead);
 		
-		
+		bos.flush();
 		socket.close();
-		
 	}
 	
 	public static String getString() {
