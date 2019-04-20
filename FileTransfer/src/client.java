@@ -2,10 +2,12 @@ import java.util.Scanner;				//Get data from user
 import java.net.Socket;					//Connects Server and Client
 import java.net.InetAddress;			//Class for IP Address Usage
 import java.io.InputStream;				//Receives Data from Server
+import java.io.OutputStream;
 import java.io.FileOutputStream;		//Exports Data to a file
 import java.io.BufferedOutputStream;	//Stores Data as it comes in
 
 public class client{
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception {
 		boolean ACK = false;
 		boolean NACK = false;
@@ -20,6 +22,9 @@ public class client{
 		
 		//User Enters File to Download
 		String fileName = getString();
+		OutputStream os = socket.getOutputStream();
+		byte[] b = fileName.getBytes();
+		os.write(b);
 		
 		//File Output to File Path
 		FileOutputStream fos = new FileOutputStream("c:\\"+fileName);
