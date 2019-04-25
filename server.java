@@ -105,6 +105,8 @@ public class server {
             result = bis.read();
         }
         String fileName = buf.toString("UTF-8");
+	//remove header
+	 fileName = fileName.substring(5, fileName.length());
         //Get socket's output stream
         OutputStream os = socket.getOutputStream();
         
