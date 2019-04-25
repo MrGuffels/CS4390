@@ -40,15 +40,17 @@ public class client {
 			0xC4614AB8, 0x5D681B02, 0x2A6F2B94, 0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D };
 
 	@SuppressWarnings("unused")
-	public static void main(String[] args) throws Exception {
+public static void main(String[] args) throws Exception {
 		//**FLAGS**//
 		/*ACK NACK EOF RDY ASK FIN */
 		boolean FIN = false;
 		
 		//Open A Socket
 		Socket socket = new Socket(InetAddress.getByName("localhost"),5000); //Address of 'localhost' on port 5000
-		byte[] contents = new byte [1456];
+		byte[] contents = new byte [1452];
 		byte[] segment = new byte [1457];
+		byte[] ackNack = new byte[] {0,0,0,0,0};
+		
 		
 		do{
 			//User Enters File to Download
@@ -105,7 +107,7 @@ public class client {
 			byte[] fileCheck= Arrays.copyOfRange(segment, 5, 8);
 			int fileChecksum = byteArrToInt(fileCheck);
 			//send ACK or NACK
-			byte[] ackNack = new byte[] {0,0,0,0,0};
+			
 			if (fileChecksum == checksumArray[checksum]) {
 				if (fileCheckLength == recievedFileLength)
 					ackNack[0] = 0x40;
@@ -121,14 +123,17 @@ public class client {
 				System.out.println("The file has been recieved, but seems to be corrupted. Open at own risk!");
 		}
 			FIN = continued();
-			if(FIN == false)
+			if(FIN == false) {
 				bos.flush();
+				ackNack[0] = 0x04;
+				os.write(ackNack);
+			}
 		}while (FIN == false);
 		
 		//close connection
 		socket.close();
 	}
-
+	//self explanitory
 	public static String getString() {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter the file name you want to get from the server: ");
@@ -136,7 +141,7 @@ public class client {
 		scanner.close();
 		return input;
 	}
-
+	//self- explanitory
 	public static void checksum(byte[] b) {
 		int bytes;
 		byte[] byteArray = new byte[4];
@@ -149,7 +154,7 @@ public class client {
 			checksum += bytes;
 		}
 	}
-
+	//self explanitory
 	public static int byteArrToInt(byte[] b) {
 		int bytes = 0;
 		int shift = 1 << 8;
@@ -163,10 +168,10 @@ public class client {
 				bytes *= shift;
 		}
 		return bytes;
-	}public static boolean continued()
-
+	}
+	//asks the user if they want to fetch another file
+	public static boolean continued()
 	{
-		/////NEEDS FIXING!!!!!!!!!
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Would you like to fetch another file? (Y/n)");
 		String input = scanner.nextLine();
@@ -175,7 +180,7 @@ public class client {
 		boolean bool;
 		if (input.contains((CharSequence)Y))
 			bool = true;
-		if (input.contains((CharSequence)y))
+		else if (input.contains((CharSequence)y))
 			bool = true;
 		else
 			bool = false;
