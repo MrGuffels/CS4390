@@ -78,6 +78,10 @@ public static void main(String[] args) throws Exception {
 			is.read(b);
 			if(b[0] == 0x80) {
 			
+			//send RDY
+			ackNack[0] = 0x08;
+			os.write(ackNack);		
+			
 			//Receive File
 			int bytesRead = 0;
 			 int recievedFileLength = 0;
