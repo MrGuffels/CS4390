@@ -77,16 +77,11 @@ public class server {
 			  0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D
 };
     @SuppressWarnings("unused")
-	public static void main(String[] args) throws Exception {
+		public static void main(String[] args) throws Exception {
     	byte[] ackNack = {0,0,0,0,0};
     	boolean FIN;
     	//Header Bits
-    	//ACK
-    	//NACK
-    	//EOF
-    	//RDY
-    	//ASK
-    	//FIN
+    	//ACK NACK EOF RDY ASK FIN
    	
     	//Initialize Sockets
         ServerSocket ssock = new ServerSocket(5000);
@@ -104,57 +99,71 @@ public class server {
             buf.write((byte) result);
             result = bis.read();
         }
-        String fileName = buf.toString("UTF-8");
-	//remove header
-	 fileName = fileName.substring(5, fileName.length());
-        //Get socket's output stream
-        OutputStream os = socket.getOutputStream();
-        
-        
-        //Specify the file
-        File file = new File("c:\\"+fileName);
-        
-        
-      //check if the file is there
-        if(file.exists() && !file.isDirectory()) { 
-        	ackNack[0] = (byte)0x80;//ACK
-        	 FileInputStream fis = new FileInputStream(file);
-             BufferedInputStream bis2 = new BufferedInputStream(fis);
+        do {
+        	String fileName = buf.toString("UTF-8");
+            fileName = fileName.substring(5, fileName.length());
+            //Get socket's output stream
+            OutputStream os = socket.getOutputStream();
+            
+            
+            //Specify the file
+            File file = new File("c:\\"+fileName);
+            
+            
+          //check if the file is there
+            if(file.exists() && !file.isDirectory()) { 
+            	ackNack[0] = (byte)0x80;//ACK
+            	 FileInputStream fis = new FileInputStream(file);
+                 BufferedInputStream bis2 = new BufferedInputStream(fis);
+                         
+                 //Read File Contents into contents array 
+                 byte[] flags;
+                 byte[] contents;
+                 byte[] send;
+                 long fileLength = file.length(); 
+                 long current = 0;
+                  
+                 long start = System.nanoTime();
+                 while(current!=fileLength){ 
+                     int size = 1452;
+                     if(fileLength - current >= size)
+                         current += size;    
+                     else{ 
+                         size = (int)(fileLength - current); 
+                         current = fileLength;
+                     } 
+                     contents = new byte[size]; 
                      
-             //Read File Contents into contents array 
-             byte[] flags;
-             byte[] contents;
-             byte[] send;
-             long fileLength = file.length(); 
-             long current = 0;
-              
-             long start = System.nanoTime();
-             while(current!=fileLength){ 
-                 int size = 1452;
-                 if(fileLength - current >= size)
-                     current += size;    
-                 else{ 
-                     size = (int)(fileLength - current); 
-                     current = fileLength;
-                 } 
-                 contents = new byte[size]; 
+                     bis2.read(contents, 0, size); 
+                     send = affixFlags(contents, fileLength);
+                     os.write(send);
+                     System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
+                 }   
+                 os.write(32);
+                 os.flush(); 
+                 //File transfer done. Close the socket connection!
                  
-                 bis2.read(contents, 0, size); 
-                 send = affixFlags(contents, fileLength);
-                 os.write(send);
-                 System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
-             }   
-             os.write(32);
-             os.flush(); 
-             //File transfer done. Close the socket connection!
-             
-             System.out.println("File sent succesfully!");
-        }
-        //file doesn't exist
-        else {
-        	ackNack[0] = 0x40;//NACK
-        	os.write(ackNack);
-        }
+                 System.out.println("File sent succesfully!");
+            }
+            //file doesn't exist
+            else {
+            	ackNack[0] = 0x40;//NACK
+            	os.write(ackNack);
+            }
+            	 //check to see if there is another request
+                result = bis.read();
+                if ((result/(1<<24))==4) {
+               	 FIN = true;
+               	 break;
+                }
+                result = bis.read();
+                while(result != -1) {
+                    buf.write((byte) result);
+                    result = bis.read();
+                }
+                fileName = buf.toString("UTF-8");
+                fileName = fileName.substring(1, fileName.length());
+        }while(FIN = false);
         socket.close();
         ssock.close();
     }
