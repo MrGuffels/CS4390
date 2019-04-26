@@ -40,7 +40,8 @@ public class client {
 			0xC4614AB8, 0x5D681B02, 0x2A6F2B94, 0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D };
 
 	@SuppressWarnings("unused")
-public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
+		String directory = getDirectory();
 		//**FLAGS**//
 		/*ACK NACK EOF RDY ASK FIN */
 		boolean FIN = false;
@@ -49,7 +50,7 @@ public static void main(String[] args) throws Exception {
 		Socket socket = new Socket(InetAddress.getByName("localhost"),5000); //Address of 'localhost' on port 5000
 		byte[] contents = new byte [1452];
 		byte[] segment = new byte [1457];
-		byte[] ackNack = new byte[] {0,0,0,0,0};
+		byte[] ackNack = new byte[] {0,0,0,0,0};//used to send ACK, NACK, RDY, and FIN
 		
 		
 		do{
@@ -65,12 +66,12 @@ public static void main(String[] args) throws Exception {
 			b[3] = 0;
 			b[4] = 0;
 			for (int i = 5; i < b.length;i++)
-				b[i] = name[i-1];
+				b[i] = name[i-5];
 			os.write(b);
 			
 			
 			//File Output to File Path
-			FileOutputStream fos = new FileOutputStream("c:\\"+fileName);
+			FileOutputStream fos = new FileOutputStream(directory+fileName);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
 			InputStream is = socket.getInputStream();
 			
@@ -79,8 +80,9 @@ public static void main(String[] args) throws Exception {
 			if(b[0] == 0x80) {
 			
 			//send RDY
-			ackNack[0] = 0x08;
-			os.write(ackNack);		
+			ackNack[0] = 0x10;
+			os.write(ackNack);	
+			
 			
 			//Receive File
 			int bytesRead = 0;
@@ -114,9 +116,9 @@ public static void main(String[] args) throws Exception {
 			
 			if (fileChecksum == checksumArray[checksum]) {
 				if (fileCheckLength == recievedFileLength)
-					ackNack[0] = 0x40;
+					ackNack[0] = (byte)0x80;//ACK
 				else
-					ackNack[0] = (byte) 0x80;//ACK
+					ackNack[0] = 0x40;//NACK
 			}
 			else
 				ackNack[0] = 0x40;//NACK
@@ -137,7 +139,7 @@ public static void main(String[] args) throws Exception {
 		//close connection
 		socket.close();
 	}
-	//self explanitory
+	//gets the file name from the user
 	public static String getString() {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Enter the file name you want to get from the server: ");
@@ -145,7 +147,15 @@ public static void main(String[] args) throws Exception {
 		scanner.close();
 		return input;
 	}
-	//self- explanitory
+	//gets the directory from the user
+	public static String getDirectory() {
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Enter the directory you want to save to: ");
+		String input = scanner.nextLine();
+		scanner.close();
+		return input;
+	}
+	//calculates the checksum
 	public static void checksum(byte[] b) {
 		int bytes;
 		byte[] byteArray = new byte[4];
@@ -158,7 +168,7 @@ public static void main(String[] args) throws Exception {
 			checksum += bytes;
 		}
 	}
-	//self explanitory
+	//turns a byte array into an int.
 	public static int byteArrToInt(byte[] b) {
 		int bytes = 0;
 		int shift = 1 << 8;
@@ -173,7 +183,7 @@ public static void main(String[] args) throws Exception {
 		}
 		return bytes;
 	}
-	//asks the user if they want to fetch another file
+	//asks the user if they want to continue with the program
 	public static boolean continued()
 	{
 		Scanner scanner = new Scanner(System.in);
@@ -184,7 +194,7 @@ public static void main(String[] args) throws Exception {
 		boolean bool;
 		if (input.contains((CharSequence)Y))
 			bool = true;
-		else if (input.contains((CharSequence)y))
+		if (input.contains((CharSequence)y))
 			bool = true;
 		else
 			bool = false;
