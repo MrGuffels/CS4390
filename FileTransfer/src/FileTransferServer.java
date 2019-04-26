@@ -1,47 +1,37 @@
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class server { 
+public class FileTransferServer { 
     
-    @SuppressWarnings("unused")
-	public static void main(String[] args) throws Exception {
-    	//Header Bits
-    	boolean ACK = false;
-		boolean NACK = false;
-		boolean EOF = false;
-		boolean RDY = false;
-		boolean ASK = false;
-		boolean FIN = false;    	
-    	
-    	//Initialize Sockets
+    public static void main(String[] args) throws Exception {
+        
+    	//File Name Transfer
+    	Socket socketF = new Socket(InetAddress.getByName("localhost"), 6000);
+        
+        InputStream inputStream = socketF.getInputStream();
+        // create a DataInputStream so we can read data from it.
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        
+        String fileName = dataInputStream.readUTF();
+        
+        //Initialize Sockets
         ServerSocket ssock = new ServerSocket(5000);
         Socket socket = ssock.accept();
         
         //The InetAddress specification
         InetAddress IA = InetAddress.getByName("localhost"); 
         
-        //Get File Name
-        InputStream is = socket.getInputStream();
-        BufferedInputStream bis = new BufferedInputStream(is);
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int result = bis.read();
-        while(result != -1) {
-            buf.write((byte) result);
-            result = bis.read();
-        }
-        String fileName = buf.toString("UTF-8");
-        
         //Specify the file
-        File file = new File("c:\\"+fileName);
+        File file = new File("D:\\Users\\Ben Guffey\\Desktop\\"+fileName);
         FileInputStream fis = new FileInputStream(file);
-        BufferedInputStream bis2 = new BufferedInputStream(fis); 
+        BufferedInputStream bis = new BufferedInputStream(fis); 
           
         //Get socket's output stream
         OutputStream os = socket.getOutputStream();
@@ -53,7 +43,7 @@ public class server {
          
         long start = System.nanoTime();
         while(current!=fileLength){ 
-            int size = 1457;
+            int size = 10000;
             if(fileLength - current >= size)
                 current += size;    
             else{ 
@@ -61,7 +51,7 @@ public class server {
                 current = fileLength;
             } 
             contents = new byte[size]; 
-            bis2.read(contents, 0, size); 
+            bis.read(contents, 0, size); 
             os.write(contents);
             System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
         }   
