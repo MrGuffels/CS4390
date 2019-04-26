@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class server { 
 	static int checksum;
@@ -77,7 +78,8 @@ public class server {
 			  0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D
 };
     @SuppressWarnings("unused")
-		public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
+    	String directory = getDirectory();
     	byte[] ackNack = {0,0,0,0,0};
     	boolean FIN;
     	//Header Bits
@@ -107,7 +109,7 @@ public class server {
             
             
             //Specify the file
-            File file = new File("c:\\"+fileName);
+            File file = new File(directory+fileName);
             
             
           //check if the file is there
@@ -144,6 +146,8 @@ public class server {
                  //File transfer done. Close the socket connection!
                  
                  System.out.println("File sent succesfully!");
+                 
+                
             }
             //file doesn't exist
             else {
@@ -162,11 +166,21 @@ public class server {
                     result = bis.read();
                 }
                 fileName = buf.toString("UTF-8");
-                fileName = fileName.substring(1, fileName.length());
+                fileName = fileName.substring(5, fileName.length());
         }while(FIN = false);
         socket.close();
         ssock.close();
     }
+    
+    
+    //gets the directory
+	public static String getDirectory() {
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Enter the directory you want to send from: ");
+		String input = scanner.nextLine();
+		scanner.close();
+		return input;
+	}
     //calculates the checksum
     public static void checksum(byte[] b) {
 		int bytes;
