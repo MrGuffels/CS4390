@@ -12,24 +12,22 @@ public class FileTransferServer {
     
     public static void main(String[] args) throws Exception {
         
-    	//File Name Transfer
+    	//File Name Receive
     	Socket socketF = new Socket(InetAddress.getByName("localhost"), 6000);
         
+    	System.out.println("Connection Made!");
+    	
         InputStream inputStream = socketF.getInputStream();
-        // create a DataInputStream so we can read data from it.
         DataInputStream dataInputStream = new DataInputStream(inputStream);
-        
         String fileName = dataInputStream.readUTF();
         
-        //Initialize Sockets
+        //File Transfer
         ServerSocket ssock = new ServerSocket(5000);
         Socket socket = ssock.accept();
-        
-        //The InetAddress specification
         InetAddress IA = InetAddress.getByName("localhost"); 
         
         //Specify the file
-        File file = new File("D:\\Users\\Ben Guffey\\Desktop\\"+fileName);
+        File file = new File("D:\\Users\\Ben Guffey\\Desktop\\DataTransfer\\"+fileName);
         FileInputStream fis = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(fis); 
           
@@ -53,7 +51,7 @@ public class FileTransferServer {
             contents = new byte[size]; 
             bis.read(contents, 0, size); 
             os.write(contents);
-            System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!");
+            System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!\n");
         }   
         
         os.flush(); 
